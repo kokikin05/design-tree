@@ -19,7 +19,9 @@ Accounts depend on what is in `config.js`.
 | Mode | When | What happens |
 |---|---|---|
 | **Preview mode** | `config.js` values are empty (the default) | Everything works, but profiles, boards and uploads are saved only in the visitor's own browser. There's no password and no collaborators. |
-| **Online mode** | `config.js` has your Supabase URL and anon key | Real accounts with e-mail and password. Boards, uploads and added designers are shared with everyone, and collaborators can be invited by e-mail. |
+| **Online mode** | `config.js` has your Supabase URL and anon key | Real accounts with e-mail and password. Boards and uploads are shared with everyone, and collaborators can be invited by e-mail. |
+
+This copy is already connected to the Supabase project "kkin0505@icloud.com's Project", and its database has been set up. Steps 2–3 below are only needed if you ever move to a new project.
 
 ## 1. Put the site on GitHub Pages
 
@@ -86,7 +88,6 @@ Open your site in a private window, click the person icon and sign up. Then:
   - Rename the board inline. Changes save automatically.
   - The owner can invite collaborators by e-mail. The invitee sees the invitation in their account menu after logging in with that address.
 - **Add media:** upload an image for any designer, with the year and a description. Images are resized to at most 2000 px before upload. They appear under "From the community" on that designer's profile.
-- **Add designer:** a new person joins the map, the chronological view, search and the lists. Anyone can open their profile.
 
 ## Rules the database enforces
 

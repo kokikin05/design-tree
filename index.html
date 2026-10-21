@@ -283,6 +283,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* ---------- accounts: shared pieces (cards, fields, chips) — after the wireframe's sign-in flow ---------- */
 .ibtn.has-user{color:var(--fg)}
 .initials{display:inline-grid;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#d9d9d9;color:#2b2b2b;font:700 11px/1 var(--f-ui);letter-spacing:.02em;overflow:hidden}
+.ibtn .initials{width:40px;height:40px;font-size:14px}
 .initials img{width:100%;height:100%;object-fit:cover;display:block}
 
 .pop{position:absolute;z-index:45;min-width:220px;max-width:min(320px,calc(100vw - 32px));padding:10px;border-radius:18px;background:#3a3a3a;border:1px solid rgba(255,255,255,.12);
@@ -475,6 +476,10 @@ button.circle-xl:hover .swap,button.circle-xl:focus-visible .swap{opacity:1}
 .am .field input,.am .field textarea,.am .field select{border-color:#e9e9e9;border-radius:4px;text-align:left}
 .am .row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .am .actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}
+.form-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:18px;padding-top:18px;border-top:3px solid var(--rule)}
+.form-foot .plain{font-size:20px;font-weight:700;gap:14px}
+.form-foot .plain svg{width:30px;height:30px}
+.form-foot .plain[disabled]{opacity:.5}
 .drop-err{margin:-24px 0 24px;text-align:center;font:500 12.5px var(--f-ui);color:#ffb3a8}
 
 /* side list on pages: same as the designer profile list, with add/added toggles on boards */
@@ -660,6 +665,18 @@ const DTStore = (function(){
       async resetPassword(email){ must(await sb.auth.resetPasswordForEmail(email, {redirectTo:location.origin + location.pathname})); },
       async setPassword(password){ must(await sb.auth.updateUser({password})); },
 
+      /* A new account makes its own profile row the first time it is signed in, from the details given at sign-up. */
+      async ensureProfile(){
+        if (!user) return null;
+        const have = must(await sb.from("profiles").select("*").eq("id", user.id).maybeSingle());
+        if (have) return prof(have);
+        const md = user.user_metadata || {};
+        const base = String(md.username || (user.email || "user").split("@")[0]).replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 32) || "user";
+        let name = base.length < 2 ? base + "_" + user.id.slice(0, 4) : base;
+        if (!must(await sb.rpc("username_available", {name}))) name = base.slice(0, 27) + "_" + user.id.slice(0, 4);
+        const row = {id:user.id, username:name, fav_designers:Array.isArray(md.fav_designers) ? md.fav_designers : [], fav_decades:Array.isArray(md.fav_decades) ? md.fav_decades.map(Number).filter(Boolean) : []};
+        return prof(must(await sb.from("profiles").insert(row).select().single()));
+      },
       async profile(id){ return prof(must(await sb.from("profiles").select("*").eq("id", id).maybeSingle())); },
       async profileByName(name){ return prof(must(await sb.from("profiles").select("*").eq("username", name).maybeSingle())); },
       async profiles(ids){
@@ -705,7 +722,13 @@ const DTStore = (function(){
         return must(await sb.from("board_invites").select("id,board_id,board_name,created_at").eq("email", (user.email || "").toLowerCase()))
           .map(r => ({id:r.id, boardId:r.board_id, boardName:r.board_name}));
       },
-      async acceptInvite(id){ return must(await sb.rpc("accept_invite", {invite_id:id})); },
+      async acceptInvite(id){
+        const inv = must(await sb.from("board_invites").select("id,board_id").eq("id", id).single());
+        /* the database only lets an invited person add themselves; the value sent here is rewritten by the board guard */
+        must(await sb.from("boards").update({collaborators:[user.id]}).eq("id", inv.board_id));
+        must(await sb.from("board_invites").delete().eq("id", id));
+        return inv.board_id;
+      },
       async declineInvite(id){ must(await sb.from("board_invites").delete().eq("id", id)); },
 
       async mediaFor(designerId){ return must(await sb.from("media").select(MEDIA_COLS).eq("designer", designerId).order("created_at", {ascending:false}).limit(200)).map(media); },
@@ -1524,7 +1547,7 @@ const AS = {
     noBoards:"No boards yet.", acctOf:n => "Account: @" + n,
     boardName:"Name", boardDesc:"Description", boardDescPh:"What is this board collecting?", boardCreated:n => "Created “" + n + "”.",
     added:n => "Added to “" + n + "”.", removed:n => "Removed from “" + n + "”.",
-    loading:"Loading…", notFound:"This page isn’t available.", backWeb:"Back to the Web", logInToSee:"Log in to see your profile.", logIn:"Log in",
+    loading:"Loading…", back:"Back", notFound:"This page isn’t available.", backWeb:"Back to the Web", logInToSee:"Log in to see your profile.", logIn:"Log in",
     changePhoto:"Change photo", addPhoto:"Add photo", bioPh:"Add a short bio so people know what you collect.", editProfile:"Edit profile", bio:"Bio",
     profileSaved:"Profile saved.", pinBoards:"Pin boards", favDesigners:"Favourite designers", network:"Network", noFavs:"No favourite designers yet.",
     mediaYou:"Media you added", mediaBy:n => "Media added by @" + n, noMediaYou:"Images you add to designers show up here.", counts:(d, m) => d + (d === 1 ? " designer" : " designers") + " · " + m + " media",
@@ -1569,7 +1592,7 @@ const AS = {
     noBoards:"ボードはまだありません。", acctOf:n => "アカウント：@" + n,
     boardName:"名前", boardDesc:"説明", boardDescPh:"このボードに集めるもの", boardCreated:n => "「" + n + "」を作成しました。",
     added:n => "「" + n + "」に追加しました。", removed:n => "「" + n + "」から外しました。",
-    loading:"読み込み中…", notFound:"このページは表示できません。", backWeb:"ネットワークに戻る", logInToSee:"プロフィールを見るにはログインしてください。", logIn:"ログイン",
+    loading:"読み込み中…", back:"戻る", notFound:"このページは表示できません。", backWeb:"ネットワークに戻る", logInToSee:"プロフィールを見るにはログインしてください。", logIn:"ログイン",
     changePhoto:"写真を変更", addPhoto:"写真を追加", bioPh:"どんなものを集めているか、短い自己紹介を書きましょう。", editProfile:"プロフィールを編集", bio:"自己紹介",
     profileSaved:"保存しました。", pinBoards:"ボード", favDesigners:"好きなデザイナー", network:"ネットワーク", noFavs:"好きなデザイナーはまだ選ばれていません。",
     mediaYou:"あなたが追加した画像", mediaBy:n => "@" + n + " が追加した画像", noMediaYou:"デザイナーに追加した画像がここに表示されます。", counts:(d, m) => "デザイナー " + d + "・画像 " + m,
@@ -1624,9 +1647,15 @@ function paintUserBtn(){
   if (me) { ub.classList.add("has-user"); ub.innerHTML = face(me); ub.setAttribute("aria-label", T("acctOf", me.username)); }
   else { ub.classList.remove("has-user"); ub.innerHTML = USER_SVG; ub.setAttribute("aria-label", S("account")); }
 }
-async function refreshMe(){
+let refreshing = null;
+function refreshMe(){
+  /* one refresh at a time: sign-in and the auth listener both ask, and a first sign-in creates the profile row */
+  if (!refreshing) refreshing = doRefreshMe().finally(() => { refreshing = null; });
+  return refreshing;
+}
+async function doRefreshMe(){
   const u = store.user();
-  me = u ? await store.profile(u.id).catch(() => null) : null;
+  me = u ? await (store.ensureProfile ? store.ensureProfile() : store.profile(u.id)).catch(() => null) : null;
   myBoards = me ? await store.boardsOf(me.id).catch(() => []) : [];
   myInvites = me ? await store.invites().catch(() => []) : [];
   paintUserBtn();
@@ -1855,7 +1884,7 @@ function plusMenu(btn){
   openPop(btn,
     '<button type="button" class="row" data-act="new-board"><span class="nm">' + T("createBoard") + "</span>" + ICON.plus + "</button>" +
     '<button type="button" class="row" data-act="add-media"><span class="nm">' + T("addMedia") + "</span>" + ICON.plus + "</button>" +
-    '<button type="button" class="row" data-act="add-designer"><span class="nm">' + T("addDesigner") + "</span>" + ICON.plus + "</button>", S("add"));
+    "", S("add"));
   popEl.addEventListener("click", popClick);
 }
 function userMenu(btn){
@@ -1887,7 +1916,6 @@ async function popClick(ev){
   const a = t.dataset.act; closePop();
   if (a === "new-board") createBoardModal();
   else if (a === "add-media") go("add-media");
-  else if (a === "add-designer") go("add-designer");
   else if (a === "me") go("me");
   else if (a === "logout") { await store.signOut(); me = null; myBoards = []; myInvites = []; paintUserBtn(); toast(T("loggedOut")); if (!pageEl.hidden) renderPage(); }
 }
@@ -2059,7 +2087,6 @@ async function renderPage(){
     if (pageKind === "me" || pageKind === "u") await renderUser(live, pageKind === "me" ? null : pageArg);
     else if (pageKind === "b") await renderBoard(live, pageArg);
     else if (pageKind === "add-media") await renderAddMedia(live, pageArg);
-    else if (pageKind === "add-designer") await renderAddDesigner(live);
   } catch (e) {
     if (live()) pageEl.innerHTML = pageMsg(errText(e), '<button type="button" class="btn" data-act="home">' + T("backWeb") + "</button>");
   }
@@ -2213,6 +2240,18 @@ async function renderBoard(live, id){
   });
 }
 
+/* bottom row of the add-media / add-designer forms: Back on the left, the action on the right (like Back to the Web / Add to Board) */
+const formFoot = label => '<div class="form-foot"><button type="button" class="plain" data-act="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>' + T("back") +
+  '</button><button type="submit" class="plain">' + esc(label) + ICON.plus.replace('viewBox="0 0 24 24"', 'viewBox="0 0 24 24" width="30" height="30"') + "</button></div>";
+let inSiteNav = 0;
+window.addEventListener("hashchange", () => { inSiteNav++; });
+function goBack(){
+  if (pageKind === "add-media" && pendingBoard) { const b = pendingBoard; pendingBoard = null; return go("b." + b); }
+  if (pageKind === "add-media" && pageArg && byId.has(pageArg)) return go(pageArg);
+  if (inSiteNav > 0 && history.length > 1) return history.back();
+  go("web");
+}
+
 /* add media */
 let draftImg = null;
 async function renderAddMedia(live, designerId){
@@ -2228,12 +2267,11 @@ async function renderAddMedia(live, designerId){
   pageEl.innerHTML = '<div class="page-wrap single"><div class="page-main"><form class="am" novalidate>' +
     '<label class="drop" tabindex="0" role="button" aria-label="' + esc(T("pickImage")) + '" title="' + esc(T("dropHint")) + '">' + ICON.big + '<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden name="file"></label>' +
     '<p class="drop-err" role="alert" hidden></p><h2 id="pageH" tabindex="-1">' + T("mediaH") + "</h2>" +
-    '<label class="field"><span>' + T("designer") + '</span><select name="designer" required><option value="">' + T("chooseDesigner") + "</option>" + opts + "</select>" +
-    '<span class="hint">' + T("missingDesigner") + '<a class="linkish" href="#add-designer">' + T("addThem") + "</a></span></label>" +
+    '<label class="field"><span>' + T("designer") + '</span><select name="designer" required><option value="">' + T("chooseDesigner") + "</option>" + opts + "</select>" + "</label>" +
     '<div class="row2">' + fieldHtml("year", T("when"), "text", 'inputmode="numeric" maxlength="20" placeholder="' + esc(T("whenPh")) + '"') +
     '<label class="field"><span>' + T("toBoard") + '</span><select name="board">' + boards + "</select></label></div>" +
     '<label class="field"><span>' + T("desc") + '</span><textarea name="description" maxlength="1000" placeholder="' + esc(T("descPh")) + '"></textarea></label>' +
-    '<p class="form-err" role="alert" hidden></p><div class="actions"><button class="btn white" type="submit">' + T("upload") + "</button></div></form></div></div>";
+    '<p class="form-err" role="alert" hidden></p>' + formFoot(T("upload")) + "</form></div></div>";
   const form = pageEl.querySelector(".am"), drop = form.querySelector(".drop"), fin = form.file, derr = form.querySelector(".drop-err");
   const take = async file => {
     derr.hidden = true; drop.classList.remove("bad");
@@ -2260,45 +2298,6 @@ async function renderAddMedia(live, designerId){
       if (bid) { const nb = await store.setBoardMedia(bid, m.id, true); const mb = myBoards.find(x => x.id === bid); if (mb) Object.assign(mb, nb); }
       toast(T("uploaded")); pendingBoard = null;
       go(bid ? "b." + bid : m.designer);
-    } catch (e) { busy(btn, false); formErr(form, errText(e)); }
-  });
-}
-
-/* add a designer */
-async function renderAddDesigner(live){
-  if (!me) { if (live()) needLoginPage(T("needLogin")); return; }
-  pageBoard = null;
-  document.title = T("dH") + " · Design Tree";
-  const discs = DATA.discOrder.map(d => '<option value="' + d + '">' + esc(DISC[d].en + " · " + DISC[d].ja) + "</option>").join("");
-  pageEl.innerHTML = '<div class="page-wrap single"><div class="page-main"><form class="am" novalidate><h2 id="pageH" tabindex="-1">' + T("dH") + "</h2>" +
-    fieldHtml("en", T("nameEn"), "text", 'maxlength="80" required autocomplete="off"', T("nameEnHint")) +
-    fieldHtml("ja", T("nameJa"), "text", 'maxlength="80" autocomplete="off"') +
-    '<div class="row2">' + fieldHtml("born", T("born"), "number", 'min="1800" max="2030" required inputmode="numeric"') + fieldHtml("died", T("died"), "number", 'min="1800" max="2100" inputmode="numeric"') + "</div>" +
-    '<label class="field"><span>' + T("discipline") + '</span><select name="disc" required>' + discs + "</select></label>" +
-    '<label class="field"><span>' + T("about") + '</span><textarea name="note" maxlength="600" placeholder="' + esc(T("aboutPh")) + '"></textarea></label>' +
-    fieldHtml("site", T("website"), "url", 'maxlength="300" placeholder="https://" autocomplete="off"') +
-    '<p class="form-err" role="alert" hidden></p><div class="actions"><button class="btn white" type="submit">' + T("addDesigner") + "</button></div></form></div></div>";
-  const form = pageEl.querySelector(".am");
-  form.addEventListener("submit", async ev => {
-    ev.preventDefault();
-    const btn = form.querySelector('[type="submit"]');
-    ["en", "born", "died", "site"].forEach(n => fieldErr(form, n, "")); formErr(form, "");
-    const en = form.en.value.trim(), born = +form.born.value, died = form.died.value ? +form.died.value : null, site = form.site.value.trim();
-    let ok = true; const bad = (n, m) => { fieldErr(form, n, m); if (ok) form[n].focus(); ok = false; };
-    if (!en) bad("en", T("eRequired"));
-    if (!(born >= 1800 && born <= 2030)) bad("born", T("eYear"));
-    if (died !== null && !(died >= born && died <= 2100)) bad("died", T("eYear"));
-    if (site && !/^https?:\/\/\S+\.\S+/.test(site)) bad("site", T("eUrl"));
-    if (!ok) return;
-    let slug = "c-" + en.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
-    if (slug.length < 4) slug = "c-designer-" + Date.now().toString(36);
-    let s2 = slug, n = 2; while (byId.has(s2)) s2 = slug + "-" + n++;
-    busy(btn, true);
-    try {
-      const d = await store.addDesigner({id:s2, en, ja:form.ja.value.trim(), born, died, disc:form.disc.value, note:form.note.value.trim(), site});
-      const p = integrateDesigner(d);
-      toast(T("designerAdded", nameOf(p)));
-      go(p.id);
     } catch (e) { busy(btn, false); formErr(form, errText(e)); }
   });
 }
@@ -2331,6 +2330,7 @@ pageEl.addEventListener("click", async ev => {
   }
   const a = ds.act; if (!a) return;
   if (a === "home") go("web");
+  else if (a === "back") goBack();
   else if (a === "login") openAuth("login", {reason:""});
   else if (a === "new-board") createBoardModal();
   else if (a === "add-media") go("add-media");
@@ -2376,7 +2376,7 @@ function route(){
   if (/[=&]/.test(h)) return;
   closePop();
   if (byId.has(h)) { closePage(); if (curProfile !== h || prof.hidden) openProfile(h); return; }
-  const m = /^(me|u|b|add-media|add-designer)(?:\.(.+))?$/.exec(h);
+  const m = /^(me|u|b|add-media)(?:\.(.+))?$/.exec(h);
   if (m) { if (!prof.hidden) closeProfile(false, true); if (m[1] !== "me") editingProfile = false; openPage(m[1], m[2] || null); return; }
   closePage();
   if (!prof.hidden) closeProfile(true, true);
