@@ -124,11 +124,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* ---------- profile ---------- */
 #profile{position:absolute;inset:0;z-index:20;overflow-y:auto;background:var(--bg);overscroll-behavior:contain}
-.prof-bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.2;z-index:0}
+.prof-bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.09;z-index:0;filter:blur(1px)}
 .prof-wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1000px) 258px;gap:64px 88px;justify-content:space-between;
   padding-block:110px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .prof-main{min-width:0}
-.prof-head{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px 64px;align-items:start;padding-left:89px}
+.prof-head{display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px 56px;align-items:center}
 .portrait{width:230px;height:261px;position:relative}
 .portrait img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.12);
   -webkit-mask-image:radial-gradient(ellipse 60% 56% at 50% 52%,#000 58%,transparent 100%);mask-image:radial-gradient(ellipse 60% 56% at 50% 52%,#000 58%,transparent 100%)}
@@ -136,15 +136,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.1),rgba(255,255,255,.02) 62%,transparent 72%);border:1px solid rgba(255,255,255,.08)}
 .monogram span{font:400 108px/1 var(--f-brush);color:var(--fg);position:relative}
 .monogram::before{content:"";position:absolute;inset:28%;border-radius:50%;background:var(--dc);filter:blur(42px);opacity:.42}
-.prof-id{min-width:0;position:relative;padding-top:52px}
-.prof-title{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
-.big-dot{width:34px;height:34px;border-radius:50%;background:var(--dc);box-shadow:0 0 26px 8px color-mix(in srgb,var(--dc) 55%,transparent);flex:none}
-.prof-meta,.bio{margin-left:56px}
-.prof-title h1{margin:0;font-weight:400;font-size:38px;line-height:1.2;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 16px;text-wrap:balance}
+.prof-id{min-width:0;position:relative}
+.prof-title{display:flex;align-items:center;gap:16px}
+.big-dot{width:18px;height:18px;border-radius:50%;background:var(--dc);box-shadow:0 0 16px 4px color-mix(in srgb,var(--dc) 55%,transparent);flex:none}
+.prof-title h1{margin:0;font-weight:400;font-size:38px;line-height:1.2;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 14px;text-wrap:balance;min-width:0}
 .prof-title .ja-name{font-family:var(--f-brush)}
 .prof-title .en-name{font-family:var(--f-name);font-weight:500}
-.prof-title .yrs{font:400 25px var(--f-mono);color:var(--muted);margin-left:auto}
-.prof-meta{margin-top:10px;font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.prof-meta{margin-top:12px;font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px 18px;flex-wrap:wrap;align-items:baseline}
+.prof-meta .yrs{font:400 15px var(--f-mono);letter-spacing:.02em;color:var(--fg-2);text-transform:none}
 .bio{margin:22px 0 0;max-width:30em;font:500 16px/1.32 var(--f-ui);color:var(--fg)}
 :lang(ja) .bio{font-family:var(--f-name);line-height:1.8}
 .prof-actions{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:56px}
@@ -166,7 +165,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .work figcaption{margin-top:8px;font:500 12.5px/1.4 var(--f-ui);color:var(--fg-2);text-wrap:pretty}
 :lang(ja) .work figcaption{font-family:var(--f-name)}
 .portrait.zoomable{cursor:zoom-in}
-.links{display:flex;flex-wrap:wrap;gap:8px 10px;margin:22px 0 0 56px}
+.links{display:flex;flex-wrap:wrap;gap:8px 10px;margin:22px 0 0}
 .links a{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border:1px solid rgba(255,255,255,.24);border-radius:999px;color:var(--fg);text-decoration:none;font:500 13px var(--f-ui)}
 .links a:hover{border-color:var(--fg);background:var(--soft)}
 .links a svg{width:11px;height:11px;flex:none;opacity:.7}
@@ -261,21 +260,17 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .searchbox{flex-basis:100%;margin-left:0;order:3}
   .legend{top:auto;bottom:calc(88px + env(safe-area-inset-bottom,0px));width:min(284px,calc(100% - 32px))}
   .dock{gap:10px}
-  .links{margin-left:0}
   .lb-stage{padding:0 12px}
   .lb-prev,.lb-next{top:auto;bottom:-58px;transform:none}
   .lb-cap{padding-inline:72px}
   .pill{height:38px;padding:0 15px;font-size:14px}
   .prof-wrap{padding-block:132px 56px}
-  .prof-head{grid-template-columns:minmax(0,1fr);padding-left:0;gap:20px}
+  .prof-head{grid-template-columns:minmax(0,1fr);gap:20px}
   .portrait{width:160px;height:182px}
   .monogram{width:150px;height:150px;margin-top:0}
   .monogram span{font-size:70px}
-  .prof-id{padding-top:0}
-  .big-dot{width:22px;height:22px}
-  .prof-meta,.bio{margin-left:0}
+  .big-dot{width:14px;height:14px}
   .prof-title h1{font-size:30px}
-  .prof-title .yrs{font-size:18px;margin-left:0;width:100%}
   .known li{font-size:18px}
   .facts{grid-template-columns:minmax(0,1fr)}
   .prof-actions button{font-size:17px;gap:12px}
@@ -1364,7 +1359,7 @@ function tieGroups(id){
   return g;
 }
 function profBg(p){
-  const w = 560, h = 350;
+  const w = 1000, h = 620;
   let s = '<svg class="prof-bg" viewBox="' + (p.x - w / 2) + " " + (p.y - h / 2) + " " + w + " " + h + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">';
   E.forEach(e => { const a = byId.get(e.s), b = byId.get(e.t); s += '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" stroke="#8b8983" stroke-width="1.4"' + (e.type === "collab" ? ' stroke-dasharray="6 4.5"' : "") + "/>"; });
   P.forEach(o => {
@@ -1427,8 +1422,8 @@ function renderProfile(id){
   prof.innerHTML = profBg(p) +
     '<div class="prof-wrap"><div class="prof-main">' +
       '<div class="prof-head">' + portrait +
-        '<div class="prof-id"><div class="prof-title"><span class="big-dot" style="--dc:' + color(p.disc) + '"></span><h1 id="profName"><span class="ja-name">' + esc(p.ja) + '</span><span class="en-name">' + esc(p.en) + '</span></h1><span class="yrs">' + yrs(p) + "</span></div>" +
-        '<div class="prof-meta"><span>' + esc(lang === "ja" ? DISC[p.disc].ja : DISC[p.disc].en) + "</span>" + (nAppr ? "<span>" + L.appr(nAppr) + "</span>" : "") + (p.custom ? "<span>" + esc(T("communityAdded")) + "</span>" : "") + "</div>" +
+        '<div class="prof-id"><div class="prof-title"><span class="big-dot" style="--dc:' + color(p.disc) + '"></span><h1 id="profName"><span class="ja-name">' + esc(p.ja) + '</span><span class="en-name">' + esc(p.en) + '</span></h1></div>' +
+        '<div class="prof-meta"><span class="yrs">' + yrs(p) + "</span><span>" + esc(lang === "ja" ? DISC[p.disc].ja : DISC[p.disc].en) + "</span>" + (nAppr ? "<span>" + L.appr(nAppr) + "</span>" : "") + (p.custom ? "<span>" + esc(T("communityAdded")) + "</span>" : "") + "</div>" +
         '<p class="bio">' + esc(lang === "ja" ? p.noteJa : p.noteEn) + "</p>" + links + "</div></div>" +
       '<div class="prof-actions"><button type="button" id="backWeb">' + L.backWeb + '</button><button type="button" id="addBoard">' + L.addBoard + ' <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="15" cy="15" r="14"/><path d="M15 8v14M8 15h14"/></svg></button></div>' +
       worksBlock + works + '<section class="community" id="community" aria-live="polite"></section>' +
