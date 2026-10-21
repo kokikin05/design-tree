@@ -224,10 +224,16 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .filterbar button{padding:7px 16px;border-radius:999px;font:700 14px var(--f-ui);letter-spacing:.06em;color:var(--fg)}
 .filterbar button[aria-pressed="true"],.filterbar button[aria-expanded="true"]{background:var(--chip-on)}
 :lang(ja) .filterbar button{font-family:var(--f-name);letter-spacing:.02em}
-.dd{position:absolute;top:calc(100% + 8px);left:0;width:260px;z-index:5;background:rgba(18,18,19,.97);border:1px solid var(--glass-edge);border-radius:20px;padding:8px}
-.dd button{display:grid;grid-template-columns:18px auto 1fr;align-items:center;gap:8px;width:100%;padding:9px 10px;border-radius:12px;text-align:left;font:400 13px var(--f-name);color:var(--fg-2)}
-.dd button b{font-weight:700;color:var(--fg)}
-.dd button:hover,.dd button[aria-checked="true"]{background:var(--soft)}
+.dd{position:absolute;top:calc(100% + 8px);left:0;width:min(312px,calc(100vw - 32px));z-index:5;background:#1b1b1c;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:6px;box-shadow:0 22px 44px -16px rgba(0,0,0,.95)}
+.dd button{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:9px 12px;border-radius:10px;text-align:left;font:500 13.5px/1.2 var(--f-ui);color:var(--fg)}
+.dd button > span:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dd button b{font:500 11.5px/1.2 var(--f-name);color:var(--muted);white-space:nowrap}
+.dd button[data-f=""] b{font:600 13.5px/1.2 var(--f-ui);color:var(--fg)}
+.dd button .dot{width:10px;height:10px;box-shadow:0 0 8px 1px color-mix(in srgb,var(--dc) 60%,transparent)}
+.dd button[data-f=""]{margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.08);border-radius:10px 10px 0 0}
+.dd button:hover{background:rgba(255,255,255,.06)}
+.dd button[aria-checked="true"]{background:rgba(255,255,255,.12)}
+:lang(ja) .dd button{font-family:var(--f-name)}
 .plist{list-style:none;margin:14px 0 0;padding:0}
 .plist button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 6px;border-radius:12px}
 .plist button:hover{background:var(--soft)}
