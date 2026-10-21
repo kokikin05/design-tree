@@ -124,8 +124,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* ---------- profile ---------- */
 #profile{position:absolute;inset:0;z-index:20;overflow-y:auto;background:var(--bg);overscroll-behavior:contain}
-.prof-bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.09;z-index:0;filter:blur(1px)}
-.prof-wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1000px) 258px;gap:64px 88px;justify-content:space-between;
+.prof-bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.2;z-index:0}
+.prof-wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 258px;gap:64px 56px;
   padding-block:110px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .prof-main{min-width:0}
 .prof-head{display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px 56px;align-items:center}
@@ -366,7 +366,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* ---------- pages (your profile, other people, boards, add media, add designer) ---------- */
 #page{position:absolute;inset:0;z-index:21;overflow-y:auto;background:var(--bg);overscroll-behavior:contain}
-.page-wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1000px) 258px;gap:64px 88px;justify-content:space-between;
+.page-wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 258px;gap:64px 56px;
   padding-block:110px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .page-main{min-width:0}
 .page-wrap.single{grid-template-columns:minmax(0,560px);justify-content:center}
@@ -1366,7 +1366,7 @@ function tieGroups(id){
   return g;
 }
 function profBg(p){
-  const w = 1000, h = 620;
+  const w = 560, h = 350;
   let s = '<svg class="prof-bg" viewBox="' + (p.x - w / 2) + " " + (p.y - h / 2) + " " + w + " " + h + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">';
   E.forEach(e => { const a = byId.get(e.s), b = byId.get(e.t); s += '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" stroke="#8b8983" stroke-width="1.4"' + (e.type === "collab" ? ' stroke-dasharray="6 4.5"' : "") + "/>"; });
   P.forEach(o => {
