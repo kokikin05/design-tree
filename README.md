@@ -1,8 +1,10 @@
 # Design Tree
 
-A map of Japanese designers, showing who they trained under, worked beside and influenced. It has EN/JP text, designer profiles with images, and accounts for profiles, pin boards and uploaded media.
+A map of Japanese designers, showing who they trained under, worked beside and influenced. It has EN/JP text and designer profiles with images. Anyone can browse it without signing up.
 
-The site is static: plain HTML, CSS and JavaScript, with no build step. It runs on GitHub Pages. Accounts, boards and uploads are stored in a free Supabase project.
+The site is static: plain HTML, CSS and JavaScript, with no build step. It runs on GitHub Pages.
+
+**Accounts are switched off.** The code for accounts, pin boards and uploads (backed by Supabase) is still in `index.html`, but it does not load. To turn it back on: set `ACCOUNTS = true` near the top of the main script, restore the two commented-out `<script>` lines above it, and restore the Supabase project. The sections below describe how it works when it is on.
 
 ```
 index.html            the whole app (map, profiles, accounts, boards)
